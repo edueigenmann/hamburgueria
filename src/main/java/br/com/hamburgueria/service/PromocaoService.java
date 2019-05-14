@@ -31,11 +31,11 @@ public class PromocaoService {
 		BigDecimal precoLancheAtualizado = vo.getValorAtualLanche();
 		IngredienteVo ingrediente = this.ingredienteService.getIngredienteById(vo.getIdIngrediente());
 
-		if (Ingredientes.QUEIJO.getValue().longValue() != vo.getIdIngrediente()
-				&& Ingredientes.HAMBURGUER_CARNE.getValue().longValue() != vo.getIdIngrediente()) {
-			precoLancheAtualizado = somaValorIngrediente(vo);
+		if (Ingredientes.QUEIJO.getValue().longValue() == vo.getIdIngrediente()
+				|| Ingredientes.HAMBURGUER_CARNE.getValue().longValue() == vo.getIdIngrediente()) {
+			precoLancheAtualizado = regraMuitaCarneMuitoQueijo(lancheVo, precoLancheAtualizado, vo, ingrediente);
 		} else {
-			precoLancheAtualizado = regraMuitaCarneMuitoQueijo(lancheVo, precoLancheAtualizado, vo.getQtdeIngrediente(), ingrediente);
+			precoLancheAtualizado = somaValorIngrediente(vo);
 		}
 
 		precoLancheAtualizado = regraLight(lancheVo, precoLancheAtualizado, ingrediente);
@@ -45,18 +45,26 @@ public class PromocaoService {
 
 	/**
 	 * Verifica qtde de queijo e carne adicional para ver se add o valor
+	 * 
 	 * @param lancheVo
 	 * @param precoLancheAtualizado
 	 * @param qtdeIngrediente
 	 * @param ingrediente
 	 * @return
 	 */
-	private BigDecimal regraMuitaCarneMuitoQueijo(LancheVo lancheVo, BigDecimal precoLancheAtualizado, Double qtdeIngrediente, IngredienteVo ingrediente) {
+	private BigDecimal regraMuitaCarneMuitoQueijo(LancheVo lancheVo, BigDecimal precoLancheAtualizado, ConsultaPromocaoVo vo,
+			IngredienteVo ingrediente) {
 
-		if (qtdeIngrediente % 3 != 0) {
-			precoLancheAtualizado = precoLancheAtualizado.add(ingrediente.getPreco());
+		if (vo.getSomaSubtrai().equals("Soma")) {
+			if (vo.getQtdeIngrediente() % 3 != 0) {
+				precoLancheAtualizado = precoLancheAtualizado.add(ingrediente.getPreco());
+			} 
+		} else {
+			if (vo.getQtdeIngrediente() % 3 != 2) {
+				precoLancheAtualizado = precoLancheAtualizado.subtract(ingrediente.getPreco());
+			} 
 		}
-
+		
 		return precoLancheAtualizado;
 	}
 
@@ -94,6 +102,7 @@ public class PromocaoService {
 
 	/**
 	 * Soma o valor de cada ingrediente add
+	 * 
 	 * @param vo
 	 * @return
 	 */
